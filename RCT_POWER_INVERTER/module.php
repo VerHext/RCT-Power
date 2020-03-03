@@ -44,7 +44,8 @@
         public function ReceiveData($JSONString) {
           // Receive data from serial port I/O
           $data = json_decode($JSONString);
-	  $FullResponse = utf8_decode( $data->Buffer );
+      $FullResponse = utf8_decode( $data->Buffer );
+      echo "test INV :: " .$FullResponse;
 	  $SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
 	  for ($x=1; $x<count($SingleResponses); $x++) {  
             if ( ord( $SingleResponses[$x][1] ) + 4 == strlen( $SingleResponses[$x] ) ) {
