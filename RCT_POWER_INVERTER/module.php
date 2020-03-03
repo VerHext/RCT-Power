@@ -65,10 +65,11 @@
 	  
         //=== Module Functions =========================================================================================
 	public function ReceiveData($JSONString) {
-		$this->sendDebug( "RCTPower JSON", $JSONString, 0 ); 
+		
 		// Receive data from serial port I/O
 		$data = json_decode($JSONString);
 		$FullResponse = utf8_decode( $data->Buffer );
+		$this->sendDebug( "RCTPower JSON", bin2hex($FullResponse), 0 ); 
 		//$this->sendDebug( "RCTPower", " INPUT > " .$FullResponse, 0 );
 		$SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
 		for ($x=1; $x<count($SingleResponses); $x++) {  
