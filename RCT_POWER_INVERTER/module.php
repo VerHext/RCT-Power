@@ -1,4 +1,27 @@
 <?php
+
+
+/*
+ 	function requestData( string $command, int $length ) {
+	  // does not work for string requests!!!
+          // build command		
+	  $hexlength = strtoupper( dechex($length) );
+          if ( strlen( $hexlength ) == 1 ) $hexlength = '0'.$hexlength;
+	  $command = "01".$hexlength.$command;
+	  $command = "2B".$command.$this->calcCRC( $command );
+	  $hexCommand = "";
+	  for( $x=0; $x<strlen($command)/2;$x++)
+	    $hexCommand = $hexCommand.chr(hexdec(substr( $command, $x*2, 2 )));
+				 
+	  $expectedLength = 9 + $length; // 
+		
+	  // clear expected Response and send Data to Parent...
+	  $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
+	  					    "Buffer" => utf8_encode($hexCommand) )));	
+	}  
+
+ */
+
   class RCTPowerInverter extends IPSModule {
 
         public function Create() {
@@ -41,32 +64,32 @@
         }
 	  
         //=== Module Functions =========================================================================================
-        public function ReceiveData($JSONString) {
-          // Receive data from serial port I/O
-          $data = json_decode($JSONString);
-      $FullResponse = utf8_decode( $data->Buffer );
-	  $this->sendDebug( "RCTPower", " INPUT > " .$FullResponse, 0 );
-	  $SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
-	  for ($x=1; $x<count($SingleResponses); $x++) {  
-            if ( ord( $SingleResponses[$x][1] ) + 4 == strlen( $SingleResponses[$x] ) ) {
-				$this->sendDebug( "RCTPower - TCP", " Length ord > " .ord( $SingleResponses[$x][1] ), 0 );
-				$this->sendDebug( "RCTPower - TCP", " Length str > " .strlen( $SingleResponses[$x] ), 0 );
-	      // lenght of response package is correct, so check CRC
-	      // first convert into 0xYY format
-              $response = "";
-	      for ( $y=0; $y<strlen($SingleResponses[$x]); $y++ ) {
-	        $hex = strtoupper( dechex( ord($SingleResponses[$x][$y]) ) );
-                if ( strlen( $hex ) == 1 ) $hex = '0'.$hex;
-	        $response = $response.$hex;
-	      }	     
-	      $CRC = $this->calcCRC( substr( $response,0,ord( $SingleResponses[$x][1] )*2+4 ));
-	      if ( $CRC == substr( $response, -4 ) )
-		// CRC is also ok, so analyze the response
-	        $this->analyzeResponse( substr( $response, 4, 8 ), substr( $response, 12, ord( $SingleResponses[$x][1] )*2-8) );
-	    }
-	  }
-          return true;
-        }
+	public function ReceiveData($JSONString) {
+		// Receive data from serial port I/O
+		$data = json_decode($JSONString);
+		$FullResponse = utf8_decode( $data->Buffer );
+		$this->sendDebug( "RCTPower", " INPUT > " .$FullResponse, 0 );
+		$SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
+		for ($x=1; $x<count($SingleResponses); $x++) {  
+				if ( ord( $SingleResponses[$x][1] ) + 4 == strlen( $SingleResponses[$x] ) ) {
+					$this->sendDebug( "RCTPower - TCP", " Length ord > " .ord( $SingleResponses[$x][1] ), 0 );
+					$this->sendDebug( "RCTPower - TCP", " Length str > " .strlen( $SingleResponses[$x] ), 0 );
+			// lenght of response package is correct, so check CRC
+			// first convert into 0xYY format
+				$response = "";
+			for ( $y=0; $y<strlen($SingleResponses[$x]); $y++ ) {
+				$hex = strtoupper( dechex( ord($SingleResponses[$x][$y]) ) );
+					if ( strlen( $hex ) == 1 ) $hex = '0'.$hex;
+				$response = $response.$hex;
+			}	     
+			$CRC = $this->calcCRC( substr( $response,0,ord( $SingleResponses[$x][1] )*2+4 ));
+			if ( $CRC == substr( $response, -4 ) )
+			// CRC is also ok, so analyze the response
+				$this->analyzeResponse( substr( $response, 4, 8 ), substr( $response, 12, ord( $SingleResponses[$x][1] )*2-8) );
+			}
+		}
+			return true;
+	}
        
         //=== Tool Functions ============================================================================================
 	function analyzeResponse( string $address, string $data ) {
@@ -454,11 +477,13 @@
 	    $hexCommand = $hexCommand.chr(hexdec(substr( $command, $x*2, 2 )));
 				 
 	  $expectedLength = 9 + $length; // 
-		
+		$this->SendDebug("TCP SEND", utf8_encode($hexCommand), 1);
 	  // clear expected Response and send Data to Parent...
 	  $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
 	  					    "Buffer" => utf8_encode($hexCommand) )));	
 	}  
+
+
 	  
 	function calcCRC( string $command ) {
           // Command with an odd byte length (add 0x00 to make odd!) without(!) start byte (0x2B)
@@ -592,7 +617,7 @@
 	  
         //=== Module Register Functions =============================================================================
         
-	 protected function registerProfiles() {
+	protected function registerProfiles() {
             // Generate Variable Profiles          
 		 
 	    //--- Boolean (Type 0)
@@ -649,82 +674,82 @@
 		
           $this->RegisterVariableInteger("DCInputAVoltage",   "Eingang A Spannung","RCTPOWER_Voltage",100);
           $this->RegisterVariableInteger("DCInputAPower",     "Eingang A Leistung","RCTPOWER_Power",101);
-	  $this->RegisterVariableFloat("DCInputAUtilization", "Eingang A Auslastung PV Module","~Valve.F",102);
-          $this->RegisterVariableInteger("DCInputBVoltage",   "Eingang B Spannung","RCTPOWER_Voltage",103);
-          $this->RegisterVariableInteger("DCInputBPower",     "Eingang B Leistung","RCTPOWER_Power",104);
-	  $this->RegisterVariableFloat("DCInputBUtilization", "Eingang B Auslastung PV Module","~Valve.F",105);
-	  $this->RegisterVariableInteger("DCInputPower",      "Eingang Gesamtleistung","RCTPOWER_Power",106);
-	  $this->RegisterVariableFloat("DCInputUtilization",  "Auslastung PV Module gesamt","~Valve.F",107);
-		
-		
-          $this->RegisterVariableInteger("BatteryVoltage",     "Batterie Spannung","RCTPOWER_Voltage",200);
-	  $this->RegisterVariableInteger("BatteryPower",       "Batterie Leistung","RCTPOWER_Power",201);	
-	  $this->RegisterVariableFloat("BatteryGrossCapacity", "Batterie Brutto-Kapazität","RCTPOWER_Capacity.2",202);
-	  $this->RegisterVariableFloat("BatteryRemainingNetCapacity","Batterie verf. Restkapazität","RCTPOWER_Capacity.2",202);	
-	  $this->RegisterVariableFloat("BatterySoC",           "Batterie Ladestand","~Valve.F",203);
-	  $this->RegisterVariableFloat("BatteryUpperSoC",      "Batterie Ladegrenze","~Valve.F",204);	
-	  $this->RegisterVariableFloat("BatteryTemperature",   "Batterie Temperatur","~Temperature",205);	
-		
-	  $this->RegisterVariableInteger("ExternalPower",  "Generator Leistung","RCTPOWER_Power",300); 
-		
-          $this->RegisterVariableInteger("PublicGridPower","Aussennetz Leistung","RCTPOWER_Power",400); 
-	  
-	  // Energy Earnings and Consumption
-	  // Day
-          $this->RegisterVariableInteger("EnergyDayEnergy",               "Tag - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",500);
-	  $this->RegisterVariableInteger("EnergyDayPVEarningInputA",      "Tag - PV Ertrag Eingang A","RCTPOWER_Energy",501);
-	  $this->RegisterVariableInteger("EnergyDayPVEarningInputB",      "Tag - PV Ertrag Eingang B","RCTPOWER_Energy",502);
-	  $this->RegisterVariableInteger("EnergyDayPVEarningInputAB",     "Tag - PV Ertrag Eingänge A+B","RCTPOWER_Energy",502);
-	  $this->RegisterVariableInteger("EnergyDayGridFeedIn",           "Tag - Netzeinspeisung","RCTPOWER_Energy",503);
-	  $this->RegisterVariableInteger("EnergyDayGridUsage",            "Tag - Netzverbrauch","RCTPOWER_Energy",504);
-	  $this->RegisterVariableInteger("EnergyDayHouseholdTotal",       "Tag - Haushalt gesamt","RCTPOWER_Energy",505);
-	  $this->RegisterVariableInteger("EnergyDayAutonomousPowerLevel", "Tag - % Anteil PV am Tagesverbrauch","~Valve", 506); 
-	  $this->RegisterVariableInteger("EnergyDayGridPowerLevel",       "Tag - % Anteil externer Strom am Tagesverbrauch","~Valve", 507); 
-	  $this->RegisterVariableInteger("EnergyDaySelfConsumptionLevel", "Tag - % PV Selbstverbrauch","~Valve", 508); 
-	  $this->RegisterVariableInteger("EnergyDayGridFeedInLevel",      "Tag - % PV Netzeinspeisung","~Valve", 509); 
-		
-	  // Month 
-	  $this->RegisterVariableInteger("EnergyMonthEnergy",               "Monat - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",600);
-	  $this->RegisterVariableInteger("EnergyMonthPVEarningInputA",      "Monat - PV Ertrag Eingang A","RCTPOWER_Energy",601);
-	  $this->RegisterVariableInteger("EnergyMonthPVEarningInputB",      "Monat - PV Ertrag Eingang B","RCTPOWER_Energy",602);
-	  $this->RegisterVariableInteger("EnergyMonthPVEarningInputAB",     "Monat - PV Ertrag Eingänge A+B","RCTPOWER_Energy",60);
-	  $this->RegisterVariableInteger("EnergyMonthGridFeedIn",           "Monat - Netzeinspeisung","RCTPOWER_Energy",603);
-	  $this->RegisterVariableInteger("EnergyMonthGridUsage",            "Monat - Netzverbrauch","RCTPOWER_Energy",604);
-	  $this->RegisterVariableInteger("EnergyMonthHouseholdTotal",       "Monat - Haushalt gesamt","RCTPOWER_Energy",605);
-	  $this->RegisterVariableInteger("EnergyMonthAutonomousPowerLevel", "Monat - % Anteil PV am Monatsverbrauch","~Valve", 606); 
-	  $this->RegisterVariableInteger("EnergyMonthGridPowerLevel",       "Monat - % Anteil externer Strom am Monatsverbrauch","~Valve", 607); 
-	  $this->RegisterVariableInteger("EnergyMonthSelfConsumptionLevel", "Monat - % PV Selbstverbrauch","~Valve", 608); 
-	  $this->RegisterVariableInteger("EnergyMonthGridFeedInLevel",      "Monat - % PV Netzeinspeisung","~Valve", 609); 
-		
-          // Year
-	  $this->RegisterVariableInteger("EnergyYearEnergy",               "Jahr - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",700);
-	  $this->RegisterVariableInteger("EnergyYearPVEarningInputA",      "Jahr - PV Ertrag Eingang A","RCTPOWER_Energy",701);
-	  $this->RegisterVariableInteger("EnergyYearPVEarningInputB",      "Jahr - PV Ertrag Eingang B","RCTPOWER_Energy",702);
-	  $this->RegisterVariableInteger("EnergyYearPVEarningInputAB",     "Jahr - PV Ertrag Eingänge A+B","RCTPOWER_Energy",702);
-	  $this->RegisterVariableInteger("EnergyYearGridFeedIn",           "Jahr - Netzeinspeisung","RCTPOWER_Energy",703);
-	  $this->RegisterVariableInteger("EnergyYearGridUsage",            "Jahr - Netzverbrauch","RCTPOWER_Energy",704);
-	  $this->RegisterVariableInteger("EnergyYearHouseholdTotal",       "Jahr - Haushalt gesamt","RCTPOWER_Energy",705);
-	  $this->RegisterVariableInteger("EnergyYearAutonomousPowerLevel", "Jahr - % Anteil PV am Jahresverbrauch","~Valve", 706); 
-	  $this->RegisterVariableInteger("EnergyYearGridPowerLevel",       "Jahr - % Anteil externer Strom am Jahresverbrauch","~Valve", 707); 
-	  $this->RegisterVariableInteger("EnergyYearSelfConsumptionLevel", "Jahr - % PV Selbstverbrauch","~Valve", 708); 
-	  $this->RegisterVariableInteger("EnergyYearGridFeedInLevel",      "Jahr - % PV Netzeinspeisung","~Valve", 709); 
-		
-	  // Total
-	  $this->RegisterVariableInteger("EnergyTotalEnergy",               "Gesamt - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",800);
-	  $this->RegisterVariableInteger("EnergyTotalPVEarningInputA",      "Gesamt - PV Ertrag Eingang A","RCTPOWER_Energy",801);
-	  $this->RegisterVariableInteger("EnergyTotalPVEarningInputB",      "Gesamt - PV Ertrag Eingang B","RCTPOWER_Energy",802);
-	  $this->RegisterVariableInteger("EnergyTotalPVEarningInputAB",     "Gesamt - PV Ertrag Eingänge A+B","RCTPOWER_Energy",802);
-	  $this->RegisterVariableInteger("EnergyTotalGridFeedIn",           "Gesamt - Netzeinspeisung","RCTPOWER_Energy",803);
-	  $this->RegisterVariableInteger("EnergyTotalGridUsage",            "Gesamt - Netzverbrauch","RCTPOWER_Energy",804);
-	  $this->RegisterVariableInteger("EnergyTotalHouseholdTotal",       "Gesamt - Haushalt gesamt","RCTPOWER_Energy",805);
-	  $this->RegisterVariableInteger("EnergyTotalAutonomousPowerLevel", "Gesamt - % Anteil PV am Gesamtverbrauch","~Valve", 806); 
-	  $this->RegisterVariableInteger("EnergyTotalGridPowerLevel",       "Gesamt - % Anteil externer Strom am Gesamtverbrauch","~Valve", 807); 
-	  $this->RegisterVariableInteger("EnergyTotalSelfConsumptionLevel", "Gesamt - % PV Selbstverbrauch","~Valve", 808); 
-	  $this->RegisterVariableInteger("EnergyTotalGridFeedInLevel",      "Gesamt - % PV Netzeinspeisung","~Valve", 809); 
-		
-          $this->RegisterVariableInteger("HousePowerCurrent","Haus Leistung","RCTPOWER_Power",900);
-	
-	  $this->RegisterVariableBoolean("Errorstatus",      "Fehlerstatus","~Alert",1000);
+			$this->RegisterVariableFloat("DCInputAUtilization", "Eingang A Auslastung PV Module","~Valve.F",102);
+				$this->RegisterVariableInteger("DCInputBVoltage",   "Eingang B Spannung","RCTPOWER_Voltage",103);
+				$this->RegisterVariableInteger("DCInputBPower",     "Eingang B Leistung","RCTPOWER_Power",104);
+			$this->RegisterVariableFloat("DCInputBUtilization", "Eingang B Auslastung PV Module","~Valve.F",105);
+			$this->RegisterVariableInteger("DCInputPower",      "Eingang Gesamtleistung","RCTPOWER_Power",106);
+			$this->RegisterVariableFloat("DCInputUtilization",  "Auslastung PV Module gesamt","~Valve.F",107);
+				
+				
+				$this->RegisterVariableInteger("BatteryVoltage",     "Batterie Spannung","RCTPOWER_Voltage",200);
+			$this->RegisterVariableInteger("BatteryPower",       "Batterie Leistung","RCTPOWER_Power",201);	
+			$this->RegisterVariableFloat("BatteryGrossCapacity", "Batterie Brutto-Kapazität","RCTPOWER_Capacity.2",202);
+			$this->RegisterVariableFloat("BatteryRemainingNetCapacity","Batterie verf. Restkapazität","RCTPOWER_Capacity.2",202);	
+			$this->RegisterVariableFloat("BatterySoC",           "Batterie Ladestand","~Valve.F",203);
+			$this->RegisterVariableFloat("BatteryUpperSoC",      "Batterie Ladegrenze","~Valve.F",204);	
+			$this->RegisterVariableFloat("BatteryTemperature",   "Batterie Temperatur","~Temperature",205);	
+				
+			$this->RegisterVariableInteger("ExternalPower",  "Generator Leistung","RCTPOWER_Power",300); 
+				
+				$this->RegisterVariableInteger("PublicGridPower","Aussennetz Leistung","RCTPOWER_Power",400); 
+			
+			// Energy Earnings and Consumption
+			// Day
+				$this->RegisterVariableInteger("EnergyDayEnergy",               "Tag - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",500);
+			$this->RegisterVariableInteger("EnergyDayPVEarningInputA",      "Tag - PV Ertrag Eingang A","RCTPOWER_Energy",501);
+			$this->RegisterVariableInteger("EnergyDayPVEarningInputB",      "Tag - PV Ertrag Eingang B","RCTPOWER_Energy",502);
+			$this->RegisterVariableInteger("EnergyDayPVEarningInputAB",     "Tag - PV Ertrag Eingänge A+B","RCTPOWER_Energy",502);
+			$this->RegisterVariableInteger("EnergyDayGridFeedIn",           "Tag - Netzeinspeisung","RCTPOWER_Energy",503);
+			$this->RegisterVariableInteger("EnergyDayGridUsage",            "Tag - Netzverbrauch","RCTPOWER_Energy",504);
+			$this->RegisterVariableInteger("EnergyDayHouseholdTotal",       "Tag - Haushalt gesamt","RCTPOWER_Energy",505);
+			$this->RegisterVariableInteger("EnergyDayAutonomousPowerLevel", "Tag - % Anteil PV am Tagesverbrauch","~Valve", 506); 
+			$this->RegisterVariableInteger("EnergyDayGridPowerLevel",       "Tag - % Anteil externer Strom am Tagesverbrauch","~Valve", 507); 
+			$this->RegisterVariableInteger("EnergyDaySelfConsumptionLevel", "Tag - % PV Selbstverbrauch","~Valve", 508); 
+			$this->RegisterVariableInteger("EnergyDayGridFeedInLevel",      "Tag - % PV Netzeinspeisung","~Valve", 509); 
+				
+			// Month 
+			$this->RegisterVariableInteger("EnergyMonthEnergy",               "Monat - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",600);
+			$this->RegisterVariableInteger("EnergyMonthPVEarningInputA",      "Monat - PV Ertrag Eingang A","RCTPOWER_Energy",601);
+			$this->RegisterVariableInteger("EnergyMonthPVEarningInputB",      "Monat - PV Ertrag Eingang B","RCTPOWER_Energy",602);
+			$this->RegisterVariableInteger("EnergyMonthPVEarningInputAB",     "Monat - PV Ertrag Eingänge A+B","RCTPOWER_Energy",60);
+			$this->RegisterVariableInteger("EnergyMonthGridFeedIn",           "Monat - Netzeinspeisung","RCTPOWER_Energy",603);
+			$this->RegisterVariableInteger("EnergyMonthGridUsage",            "Monat - Netzverbrauch","RCTPOWER_Energy",604);
+			$this->RegisterVariableInteger("EnergyMonthHouseholdTotal",       "Monat - Haushalt gesamt","RCTPOWER_Energy",605);
+			$this->RegisterVariableInteger("EnergyMonthAutonomousPowerLevel", "Monat - % Anteil PV am Monatsverbrauch","~Valve", 606); 
+			$this->RegisterVariableInteger("EnergyMonthGridPowerLevel",       "Monat - % Anteil externer Strom am Monatsverbrauch","~Valve", 607); 
+			$this->RegisterVariableInteger("EnergyMonthSelfConsumptionLevel", "Monat - % PV Selbstverbrauch","~Valve", 608); 
+			$this->RegisterVariableInteger("EnergyMonthGridFeedInLevel",      "Monat - % PV Netzeinspeisung","~Valve", 609); 
+				
+				// Year
+			$this->RegisterVariableInteger("EnergyYearEnergy",               "Jahr - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",700);
+			$this->RegisterVariableInteger("EnergyYearPVEarningInputA",      "Jahr - PV Ertrag Eingang A","RCTPOWER_Energy",701);
+			$this->RegisterVariableInteger("EnergyYearPVEarningInputB",      "Jahr - PV Ertrag Eingang B","RCTPOWER_Energy",702);
+			$this->RegisterVariableInteger("EnergyYearPVEarningInputAB",     "Jahr - PV Ertrag Eingänge A+B","RCTPOWER_Energy",702);
+			$this->RegisterVariableInteger("EnergyYearGridFeedIn",           "Jahr - Netzeinspeisung","RCTPOWER_Energy",703);
+			$this->RegisterVariableInteger("EnergyYearGridUsage",            "Jahr - Netzverbrauch","RCTPOWER_Energy",704);
+			$this->RegisterVariableInteger("EnergyYearHouseholdTotal",       "Jahr - Haushalt gesamt","RCTPOWER_Energy",705);
+			$this->RegisterVariableInteger("EnergyYearAutonomousPowerLevel", "Jahr - % Anteil PV am Jahresverbrauch","~Valve", 706); 
+			$this->RegisterVariableInteger("EnergyYearGridPowerLevel",       "Jahr - % Anteil externer Strom am Jahresverbrauch","~Valve", 707); 
+			$this->RegisterVariableInteger("EnergyYearSelfConsumptionLevel", "Jahr - % PV Selbstverbrauch","~Valve", 708); 
+			$this->RegisterVariableInteger("EnergyYearGridFeedInLevel",      "Jahr - % PV Netzeinspeisung","~Valve", 709); 
+				
+			// Total
+			$this->RegisterVariableInteger("EnergyTotalEnergy",               "Gesamt - PV Energie ans Haus (via Batteriepuffer)","RCTPOWER_Energy",800);
+			$this->RegisterVariableInteger("EnergyTotalPVEarningInputA",      "Gesamt - PV Ertrag Eingang A","RCTPOWER_Energy",801);
+			$this->RegisterVariableInteger("EnergyTotalPVEarningInputB",      "Gesamt - PV Ertrag Eingang B","RCTPOWER_Energy",802);
+			$this->RegisterVariableInteger("EnergyTotalPVEarningInputAB",     "Gesamt - PV Ertrag Eingänge A+B","RCTPOWER_Energy",802);
+			$this->RegisterVariableInteger("EnergyTotalGridFeedIn",           "Gesamt - Netzeinspeisung","RCTPOWER_Energy",803);
+			$this->RegisterVariableInteger("EnergyTotalGridUsage",            "Gesamt - Netzverbrauch","RCTPOWER_Energy",804);
+			$this->RegisterVariableInteger("EnergyTotalHouseholdTotal",       "Gesamt - Haushalt gesamt","RCTPOWER_Energy",805);
+			$this->RegisterVariableInteger("EnergyTotalAutonomousPowerLevel", "Gesamt - % Anteil PV am Gesamtverbrauch","~Valve", 806); 
+			$this->RegisterVariableInteger("EnergyTotalGridPowerLevel",       "Gesamt - % Anteil externer Strom am Gesamtverbrauch","~Valve", 807); 
+			$this->RegisterVariableInteger("EnergyTotalSelfConsumptionLevel", "Gesamt - % PV Selbstverbrauch","~Valve", 808); 
+			$this->RegisterVariableInteger("EnergyTotalGridFeedInLevel",      "Gesamt - % PV Netzeinspeisung","~Valve", 809); 
+				
+				$this->RegisterVariableInteger("HousePowerCurrent","Haus Leistung","RCTPOWER_Power",900);
+			
+			$this->RegisterVariableBoolean("Errorstatus",      "Fehlerstatus","~Alert",1000);
         } 
 	  
 	  
