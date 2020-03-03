@@ -49,7 +49,7 @@
 	  $SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
 	  for ($x=1; $x<count($SingleResponses); $x++) {  
             if ( ord( $SingleResponses[$x][1] ) + 4 == strlen( $SingleResponses[$x] ) ) {
-				$this->sendDebug( "RCTPower - TCP", " Length ord > " .ord( $SingleResponses[$x][1] ) + 4, 0 );
+				$this->sendDebug( "RCTPower - TCP", " Length ord > " .ord( $SingleResponses[$x][1] ), 0 );
 				$this->sendDebug( "RCTPower - TCP", " Length str > " .strlen( $SingleResponses[$x] ), 0 );
 	      // lenght of response package is correct, so check CRC
 	      // first convert into 0xYY format
