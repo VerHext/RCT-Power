@@ -65,6 +65,7 @@
 	  
         //=== Module Functions =========================================================================================
 	public function ReceiveData($JSONString) {
+		echo "JSON :: ".$JSONString."\n";	 
 		// Receive data from serial port I/O
 		$data = json_decode($JSONString);
 		$FullResponse = utf8_decode( $data->Buffer );
@@ -469,7 +470,10 @@
 	  // does not work for string requests!!!
           // build command		
 	  $hexlength = strtoupper( dechex($length) );
-          if ( strlen( $hexlength ) == 1 ) $hexlength = '0'.$hexlength;
+
+
+	if ( strlen( $hexlength ) == 1 ) $hexlength = '0'.$hexlength;
+
 	  $command = "01".$hexlength.$command;
 	  $command = "2B".$command.$this->calcCRC( $command );
 	  $hexCommand = "";
@@ -490,11 +494,13 @@
           $commandLength = strlen( $command ) / 2;
           $crc = 0xFFFF; 	
           for ( $x = 0; $x <$commandLength; $x++ ) {
-            $b = hexdec( substr( $command, $x*2, 2 ) );
+
+			$b = hexdec( substr( $command, $x*2, 2 ) );
+			
             for( $i = 0; $i<8; $i++ ) {
-              $bit = (($b >> (7 - $i) & 1) == 1);
-	      $c15 = ((($crc >> 15) & 1) == 1); 
-	      $crc <<= 1;
+              $bit = (($b >> (7 - $i) & 1) == 1); 
+			  $c15 = ((($crc >> 15) & 1) == 1); 
+				$crc <<= 1;
               if ($c15 ^ $bit) $crc ^= 0x1021;
             }
             $crc &= 0xffff;
