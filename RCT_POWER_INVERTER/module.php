@@ -482,7 +482,7 @@
 	    $hexCommand = $hexCommand.chr(hexdec(substr( $command, $x*2, 2 )));
 				 
 	  $expectedLength = 9 + $length; // 
-		$this->sendDebug( "TCP SEND kl ", json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
+	$this->sendDebug( "TCP SEND kl ", json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
 		"Buffer" => utf8_encode($hexCommand) )));
 	  // clear expected Response and send Data to Parent...
 	  $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
