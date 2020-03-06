@@ -485,7 +485,10 @@
 		$this->SendDebug("TCP SEND", utf8_encode($hexCommand), 1);
 	  // clear expected Response and send Data to Parent...
 	  $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
-	  					    "Buffer" => utf8_encode($hexCommand) )));	
+							  "Buffer" => utf8_encode($hexCommand) )));	
+	
+		$this->sendDebug( "TCP RECEIVED", json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", 
+		"Buffer" => utf8_encode($hexCommand) )));
 	}  
 
 
