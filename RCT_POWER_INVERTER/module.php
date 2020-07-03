@@ -70,12 +70,12 @@
 		$data = json_decode($JSONString);
 		$FullResponse = utf8_decode( $data->Buffer );
 		$this->sendDebug( "RCTPower JSON", bin2hex($FullResponse), 0 ); 
+		
 		//$this->sendDebug( "RCTPower", " INPUT > " .$FullResponse, 0 );
 		$SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
+		$this->sendDebug( "RCTPower - TCP", "  data  .$ingleResponses ), 0 );
 		for ($x=1; $x<count($SingleResponses); $x++) {  
 				if ( ord( $SingleResponses[$x][1] ) + 4 == strlen( $SingleResponses[$x] ) ) {
-					$this->sendDebug( "RCTPower - TCP", " Length ord > " .ord( $SingleResponses[$x][1] ), 0 );
-					$this->sendDebug( "RCTPower - TCP", " Length str > " .strlen( $SingleResponses[$x] ), 0 );
 			// lenght of response package is correct, so check CRC
 			// first convert into 0xYY format
 				$response = "";
@@ -84,6 +84,7 @@
 					if ( strlen( $hex ) == 1 ) $hex = '0'.$hex;
 				$response = $response.$hex;
 			}	     
+					
 			$CRC = $this->calcCRC( substr( $response,0,ord( $SingleResponses[$x][1] )*2+4 ));
 			if ( $CRC == substr( $response, -4 ) )
 			// CRC is also ok, so analyze the response
