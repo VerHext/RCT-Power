@@ -73,7 +73,6 @@
 		
 		//$this->sendDebug( "RCTPower", " INPUT > " .$FullResponse, 0 );
 		$SingleResponses = explode( chr(43), $FullResponse ); // split on 0x2B 
-		$this->sendDebug( "RCTPower - TCP", "  data  .$ingleResponses ), 0 );
 		for ($x=1; $x<count($SingleResponses); $x++) {  
 				if ( ord( $SingleResponses[$x][1] ) + 4 == strlen( $SingleResponses[$x] ) ) {
 			// lenght of response package is correct, so check CRC
