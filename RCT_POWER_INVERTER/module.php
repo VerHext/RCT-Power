@@ -493,7 +493,7 @@
 
 	  
 	function calcCRC( string $command ) {
-		echo "CMD ".$command;
+		$this->sendDebug( "RCTPower - TCP", " cmd -crc > " .$command, 0 );
           // Command with an odd byte length (add 0x00 to make odd!) without(!) start byte (0x2B)
           $commandLength = strlen( $command ) / 2;
           $crc = 0xFFFF; 	
@@ -510,7 +510,7 @@
             $crc &= 0xffff;
           }  
           $crc = strtoupper( dechex( $crc ) );
-	echo "CRC ".$crc;
+	$this->sendDebug( "RCTPower - TCP", " crc -crc > " .$crc, 0 );
 	  if ( strlen( $crc ) == 3 ) $crc = '0'.$crc;
 	  return $crc;
         }    
