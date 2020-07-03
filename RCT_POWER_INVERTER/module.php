@@ -510,7 +510,7 @@
             $crc &= 0xffff;
           }  
           $crc = strtoupper( dechex( $crc ) );
-	echo "CRC ".$crc
+	echo "CRC ".$crc;
 	  if ( strlen( $crc ) == 3 ) $crc = '0'.$crc;
 	  return $crc;
         }    
