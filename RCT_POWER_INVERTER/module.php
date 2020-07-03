@@ -493,6 +493,7 @@
 
 	  
 	function calcCRC( string $command ) {
+		echo "CMD ".$command;
           // Command with an odd byte length (add 0x00 to make odd!) without(!) start byte (0x2B)
           $commandLength = strlen( $command ) / 2;
           $crc = 0xFFFF; 	
@@ -509,6 +510,7 @@
             $crc &= 0xffff;
           }  
           $crc = strtoupper( dechex( $crc ) );
+	echo "CRC ".$crc
 	  if ( strlen( $crc ) == 3 ) $crc = '0'.$crc;
 	  return $crc;
         }    
