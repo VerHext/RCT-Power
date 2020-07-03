@@ -510,7 +510,7 @@
             $crc &= 0xffff;
           }  
           $crc = strtoupper( dechex( $crc ) );
-	$this->sendDebug( "RCTPower - TCP", " crc -crc > " .$crc, 0 );
+	$this->sendDebug( "RCTPower - TCP", " crc 2-crc > " .$crc, 0 );
 	  if ( strlen( $crc ) == 3 ) $crc = '0'.$crc;
 	  return $crc;
         }    
