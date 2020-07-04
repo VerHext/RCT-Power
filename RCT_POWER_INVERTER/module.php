@@ -471,12 +471,13 @@
 	  // does not work for string requests!!!
           // build command		
 	  $hexlength = strtoupper( dechex($length) );
-
+	$this->sendDebug( "RCTPower JSON LENGTH 22 :: ", $hexlength, 0 ); 
 
 	if ( strlen( $hexlength ) == 1 ) $hexlength = '0'.$hexlength;
-
+$this->sendDebug( "RCTPower JSON LENGTH 23 :: ", $hexlength, 0 ); 
 	  $command = "01".$hexlength.$command;
 	  $command = "2B".$command.$this->calcCRC( $command );
+		$this->sendDebug( "RCTPower JSON LENGTH 24 :: ", $command, 0 ); 
 	  $hexCommand = "";
 	  for( $x=0; $x<strlen($command)/2;$x++)
 	    $hexCommand = $hexCommand.chr(hexdec(substr( $command, $x*2, 2 )));
